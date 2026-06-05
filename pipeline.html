@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIDC-IDRI 전처리 파이프라인 문서</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:#1a1a1a;background:#f5f5f0;line-height:1.6}
+.container{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+h1{font-size:22px;font-weight:600;margin-bottom:.25rem}
+.subtitle{font-size:14px;color:#666;margin-bottom:2rem}
+.tabs{display:flex;gap:0;border-bottom:1.5px solid #ddd;margin-bottom:1.5rem;overflow-x:auto}
+.tab{font-size:13px;padding:.5rem 1.1rem;cursor:pointer;color:#666;border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s;user-select:none;background:none;border-top:none;border-left:none;border-right:none}
+.tab.active{color:#111;border-bottom-color:#111;font-weight:600}
+.tab:hover{color:#333}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.section{margin-bottom:2rem}
+.section-title{font-size:16px;font-weight:600;color:#111;margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid #e0e0e0}
+.prose{font-size:13px;color:#555;line-height:1.7}
+.card{background:#fff;border:1px solid #e5e5e0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:.75rem}
+.card-row{display:flex;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap}
+.card-sm{background:#f9f9f6;border-radius:8px;padding:.75rem 1rem;flex:1;min-width:150px}
+.card-sm .lbl{font-size:11px;color:#888;margin-bottom:.2rem;text-transform:uppercase;letter-spacing:.05em}
+.card-sm .val{font-size:20px;font-weight:600;color:#111}
+.card-sm .sub{font-size:11px;color:#888;margin-top:.2rem}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-right:4px}
+.tag-blue{background:#e8f0fe;color:#1a56db}
+.tag-green{background:#def7ec;color:#057a55}
+.tag-warn{background:#fef3c7;color:#92400e}
+.tag-red{background:#fde8e8;color:#c81e1e}
+.tag-gray{background:#f0f0ed;color:#555}
+.code{font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;background:#f0f0ed;padding:2px 6px;border-radius:4px;color:#c7254e}
+.step-file{font-family:monospace;font-size:11px;font-weight:600;background:#e8f0fe;color:#1a56db;padding:2px 8px;border-radius:4px;margin-right:.5rem}
+.subsec{font-size:13px;font-weight:600;color:#333;margin:.75rem 0 .3rem}
+.output-line{font-size:12px;color:#555;margin:.2rem 0;padding-left:.75rem;border-left:2.5px solid #e0e0e0}
+.checklist{list-style:none}
+.checklist li{display:flex;align-items:flex-start;gap:.6rem;font-size:13px;padding:.4rem 0;border-bottom:.5px solid #eee;color:#444}
+.checklist li:last-child{border:none}
+.ck-done{color:#057a55;font-size:16px;flex-shrink:0;line-height:1.4}
+.ck-warn{color:#d97706;font-size:16px;flex-shrink:0;line-height:1.4}
+.ck-todo{color:#bbb;font-size:16px;flex-shrink:0;line-height:1.4}
+.next-card{background:#fff;border:1px solid #e5e5e0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:.6rem}
+.next-card:hover{background:#fafaf8;border-color:#ccc}
+.next-num{font-size:11px;font-weight:700;color:#1a56db;margin-bottom:.2rem;letter-spacing:.05em}
+.next-title{font-size:14px;font-weight:600;color:#111;margin-bottom:.25rem}
+.next-desc{font-size:12px;color:#666;line-height:1.6}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;margin-left:.4rem;vertical-align:middle}
+.badge-hi{background:#fde8e8;color:#c81e1e}
+.badge-med{background:#fef3c7;color:#92400e}
+.badge-lo{background:#def7ec;color:#057a55}
+table.data{width:100%;font-size:12px;border-collapse:collapse}
+table.data th{text-align:left;padding:.4rem .5rem;font-weight:600;color:#888;border-bottom:1.5px solid #e5e5e0}
+table.data td{padding:.35rem .5rem;border-bottom:.5px solid #eee;color:#444}
+.pipe-wrap{overflow-x:auto;padding-bottom:.5rem}
+.pipe{display:flex;align-items:stretch;gap:0;min-width:900px;margin-bottom:1rem}
+.pb{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:.65rem .9rem;min-width:120px;flex-shrink:0}
+.pb-num{font-size:10px;color:#aaa;margin-bottom:.1rem;font-weight:600;letter-spacing:.05em}
+.pb-title{font-size:12px;font-weight:700;color:#111;margin-bottom:.2rem}
+.pb-sub{font-size:11px;color:#777;line-height:1.45}
+.pb.done{border-color:#a7f3d0}
+.pb.todo{border-color:#fde68a}
+.pa{display:flex;align-items:center;padding:0 5px;color:#bbb;font-size:13px;flex-shrink:0}
+.tip{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#78350f;margin-bottom:.75rem}
+.tip strong{font-weight:700}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>LIDC-IDRI 전처리 파이프라인</h1>
+<div class="subtitle">2.5D 슬라이스 기반 폐 결절 분류 연구 — 코드 문서 & 진행 현황</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview')">개요 & 통계</button>
+  <button class="tab" onclick="showTab('pipeline')">파이프라인</button>
+  <button class="tab" onclick="showTab('code')">코드 설명</button>
+  <button class="tab" onclick="showTab('checklist')">체크리스트</button>
+  <button class="tab" onclick="showTab('next')">다음 스텝</button>
+</div>
+
+<!-- ═══ 개요 -->
+<div id="tab-overview" class="tab-content active">
+  <div class="section">
+    <div class="section-title">연구 가설</div>
+    <div class="card">
+      <div class="prose" style="font-size:14px;color:#222;font-weight:500;margin-bottom:.5rem">
+        2.5D 슬라이스 입력 방식(중심 슬라이스 ± N장)으로 결절 주변 맥락을 포함하여 학습하면, 단일 슬라이스 2D CNN 대비 AUC를 비롯한 분류 성능이 향상된다.
+      </div>
+      <div class="prose">전제: Z방향 맥락 정보(결절의 3D 형태, 주변 조직 패턴)가 악성도 판별에 유의미한 feature를 제공한다.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">데이터셋 통계</div>
+    <div class="card-row">
+      <div class="card-sm"><div class="lbl">총 결절 수</div><div class="val">2,696</div><div class="sub">LIDC-IDRI 전체</div></div>
+      <div class="card-sm"><div class="lbl">CT 해상도</div><div class="val">512²</div><div class="sub">883개 시리즈 100% 균일</div></div>
+      <div class="card-sm"><div class="lbl">XY spacing</div><div class="val">~0.7mm</div><div class="sub">0.625–0.8mm 범위</div></div>
+      <div class="card-sm"><div class="lbl">Z spacing</div><div class="val">1 / 2.5mm</div><div class="sub">두 피크 (등방성 리샘플로 표준화)</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">DICOM 공간 특성 (883 시리즈 분석)</div>
+    <div class="tip"><strong>주의:</strong> Z spacing이 1mm / 2.5mm 두 그룹으로 분리됨 → 1mm 등방성 리샘플링(SimpleITK Linear)으로 표준화 완료. XY spacing은 0.625~0.8mm로 거의 균일.</div>
+    <div class="prose">Inter-reader 매칭 임계값: XY ≤ <strong>5.0px</strong>, Z ≤ <strong>8.0mm</strong>. validate_grouping.py의 centroid 거리 분포(95th percentile) 기반으로 설정.</div>
+  </div>
+</div>
+
+<!-- ═══ 파이프라인 -->
+<div id="tab-pipeline" class="tab-content">
+  <div class="section">
+    <div class="section-title">전처리 파이프라인 전체 흐름</div>
+    <div class="pipe-wrap">
+      <div class="pipe">
+        <div class="pb done"><div class="pb-num">STEP 1 ✓</div><div class="pb-title">XML 파싱</div><div class="pb-sub">parse_lidc_<br>annotations.py</div></div>
+        <div class="pa">→</div>
+        <div class="pb done"><div class="pb-num">STEP 2 ✓</div><div class="pb-title">결절 매칭</div><div class="pb-sub">centroid 거리<br>4판독자→1결절</div></div>
+        <div class="pa">→</div>
+        <div class="pb done"><div class="pb-num">STEP 3 ✓</div><div class="pb-title">파생값 계산</div><div class="pb-sub">center_z<br>rep_polygon</div></div>
+        <div class="pa">→</div>
+        <div class="pb done"><div class="pb-num">STEP 4 ✓</div><div class="pb-title">DICOM 매칭</div><div class="pb-sub">match_dicom.py<br>CT 메타+직경</div></div>
+        <div class="pa">→</div>
+        <div class="pb done"><div class="pb-num">STEP 5 ✓</div><div class="pb-title">NIfTI 변환</div><div class="pb-sub">export_nifti.py<br>1mm 리샘플</div></div>
+        <div class="pa">→</div>
+        <div class="pb done"><div class="pb-num">STEP 6 ✓</div><div class="pb-title">HU 정규화</div><div class="pb-sub">[-1000,400]<br>→[0,1]</div></div>
+        <div class="pa">→</div>
+        <div class="pb done"><div class="pb-num">STEP 7 ✓</div><div class="pb-title">7진 라벨링</div><div class="pb-sub"></div></div>
+        <div class="pa">→</div>
+        <div class="pb done"><div class="pb-num">STEP 8 ✓</div><div class="pb-title">베이스라인</div><div class="pb-sub">3-conv CNN<br>단일 슬라이스</div></div>
+        <div class="pa">→</div>
+        <div class="pb todo"><div class="pb-num">STEP 9 ○</div><div class="pb-title">2.5D 모델</div><div class="pb-sub">center_z±N<br>채널 스택</div></div>
+        <div class="pa">→</div>
+        <div class="pb todo"><div class="pb-num">STEP 10 ○</div><div class="pb-title">Ablation</div><div class="pb-sub">N=0,1,2,3<br>AUC 비교</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">입출력 파일 구조</div>
+    <div class="card">
+      <div class="subsec">입력</div>
+      <div class="output-line"><span class="code">./LIDC-IDRI/{subject_id}/…/*.dcm</span> — 원본 DICOM</div>
+      <div class="output-line"><span class="code">metadata.csv</span> — TCIA Series UID ↔ file_location 매핑</div>
+      <div class="output-line"><span class="code">XML/*.xml</span> — 판독자 annotation (malignancy 1-5, polygon ROI)</div>
+      <div class="subsec" style="margin-top:.75rem">중간 산출물</div>
+      <div class="output-line"><span class="code">nodule_info.json</span> — 환자별 결절 dict (series_uid, rois, derived)</div>
+      <div class="output-line"><span class="code">nodule_info_clean.json</span> — ct_meta + mm_coords + diameter 추가본</div>
+      <div class="output-line"><span class="code">coord_violations.json</span> — 범위 초과 좌표 보고서</div>
+      <div class="subsec" style="margin-top:.75rem">최종 출력 (환자별)</div>
+      <div class="output-line"><span class="code">nifti/{subject_id}/ct.nii.gz</span> — 1mm 리샘플, HU 원본</div>
+      <div class="output-line"><span class="code">nifti/{subject_id}/ct_norm.nii.gz</span> — [0,1] 정규화 (ML 입력용)</div>
+      <div class="output-line"><span class="code">nifti/{subject_id}/seg.nii.gz</span> — 결절 segmentation mask (값=nodule_idx+1)</div>
+      <div class="output-line"><span class="code">nifti/{subject_id}/centroid.csv</span> — 결절 mm 좌표</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">핵심 설계 결정 사항</div>
+    <div class="card-row">
+      <div class="card-sm" style="min-width:180px">
+        <div class="lbl">HU 윈도잉</div>
+        <div style="font-size:14px;font-weight:700;margin:.2rem 0">[-1000, 400]</div>
+        <div class="sub">공기~연조직/뼈 경계, 폐 결절에 최적화된 범위</div>
+      </div>
+      <div class="card-sm" style="min-width:180px">
+        <div class="lbl">z 좌표 보정</div>
+        <div style="font-size:14px;font-weight:700;margin:.2rem 0">deci-mm 감지</div>
+        <div class="sub">|z|>400mm → /10 보정. 반전 DICOM actual_step 부호 보존</div>
+      </div>
+      <div class="card-sm" style="min-width:180px">
+        <div class="lbl">리샘플링</div>
+        <div style="font-size:14px;font-weight:700;margin:.2rem 0">1mm 등방성</div>
+        <div class="sub">SimpleITK Linear, Z spacing 이질성 완전 제거</div>
+      </div>
+      <div class="card-sm" style="min-width:180px">
+        <div class="lbl">Center_z 결정</div>
+        <div style="font-size:14px;font-weight:700;margin:.2rem 0">판독자 합의 z</div>
+        <div class="sub">가장 많은 판독자가 표시한 z슬라이스 (단순 median 아님)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 코드 설명 -->
+<div id="tab-code" class="tab-content">
+  <div class="section">
+    <div class="section-title">parse_lidc_annotations.py</div>
+    <div class="card">
+      <div style="margin-bottom:.5rem"><span class="step-file">역할</span> LIDC XML annotation 파싱 → 환자별 결절 딕셔너리 구성 → JSON 저장 (1단계)</div>
+      <div class="subsec">주요 함수 4개</div>
+      <div class="prose"><strong>build_uid_map()</strong> — metadata.csv → {series_uid: {subject_id, file_location}} O(1) 조회 맵. 루프마다 CSV 탐색 방지.</div>
+      <br>
+      <div class="prose"><strong>collect_raw_nodules()</strong> — ReadingSession 순회, malignancy 1-5 범위 외 제외, polygon ROI 추출. 핵심 처리: z_raw 이상값(|z|>400mm) 자동 감지 → deci-mm 의심 시 /10 보정 + z_suspicious 플래그. MIN_POLY_PTS 미만 polygon 제외.</div>
+      <br>
+      <div class="prose"><strong>match_nodules()</strong> — O(n²) greedy 매칭. 조건: XY 유클리드 ≤ NODULE_XY_THR(5px) AND |Δz| ≤ NODULE_Z_THR(8mm). 같은 reader_id의 중복 병합 금지 로직 포함.</div>
+      <br>
+      <div class="prose"><strong>compute_derived()</strong> — all_z_positions(정렬), center_z(판독자 최다 동의 z, 동률 시 median), rep_polygon(center_z에서 꼭짓점 수 최다), center_x/y 계산. bbox_2d/3d는 주석 처리(팀원과 결정 대기).</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">match_dicom.py</div>
+    <div class="card">
+      <div style="margin-bottom:.5rem"><span class="step-file">역할</span> file_location → DICOM 직접 접근 → CT 공간 메타 추출 → 결절 물리 직경 계산 (이전 버전 대비 SeriesUID 전수 탐색 제거, 속도 향상)</div>
+      <div class="subsec">주요 함수</div>
+      <div class="prose"><strong>resolve_dicom_dir()</strong> — SERVER_ROOT + file_location('./' 제거) → 절대경로 변환. 폴더 존재 검사.</div>
+      <br>
+      <div class="prose"><strong>extract_ct_meta()</strong> — stop_before_pixels=True로 헤더만 읽어 빠름(~수ms/파일). 추출 항목: rows/cols/num_slices, pixel_spacing_x/y, z_spacing, rescale_slope/intercept, bits_stored, window_center/width. 제조사/커널은 주석 처리.</div>
+      <br>
+      <div class="prose"><strong>compute_nodule_diameter_3d()</strong> — polygon vertex를 mm 공간(× pixel_spacing) 변환 → x/y/z 범위 → diameter_max_mm. nodule_info_clean.json의 derived에 추가.</div>
+      <br>
+      <div class="prose"><strong>plot_dicom_histograms()</strong> — 883 시리즈의 rows/cols/슬라이스수/spacing 4종 히스토그램 생성 (dicom_histogram.png).</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">export_nifti.py</div>
+    <div class="card">
+      <div style="margin-bottom:.5rem"><span class="step-file">역할</span> DICOM → 1mm 등방성 NIfTI 변환, polygon annotation → 3D segmentation mask 렌더링</div>
+      <div class="subsec">핵심 설계: 반전 DICOM 처리 (LIDC-IDRI-0085 케이스)</div>
+      <div class="tip" style="margin:.5rem 0">
+        <strong>문제:</strong> SimpleITK GetSpacing()[2]은 항상 양수 반환 → 내림차순(반전) DICOM에서 z_vox 음수 계산 오류<br>
+        <strong>해결:</strong> SliceLocation 태그(0020|0032) 직접 읽어 actual_step = sl_1 - sl_0 (음수 가능) 계산<br>
+        <strong>공식:</strong> z_vox = round((z_mm - sl_origin) / actual_step)
+      </div>
+      <div class="prose"><strong>normalize_hu()</strong> — clip(HU_MIN=-1000, HU_MAX=400) → 선형 [0,1]. ct_norm.nii.gz 저장.</div>
+      <br>
+      <div class="prose"><strong>build_seg_mask()</strong> — skimage.draw.polygon으로 2D polygon을 각 슬라이스에 렌더링 → 3D mask. actual_step 부호로 반전 케이스 자동 처리. 값 = nodule_idx+1.</div>
+      <br>
+      <div class="prose"><strong>process_patient()</strong> — 복수 series 처리, center_z 기준 nodule→series 배정, 범위 밖은 최근접 series에 강제 배정 + WARN 로그.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">validate_grouping.py</div>
+    <div class="card">
+      <div style="margin-bottom:.5rem"><span class="step-file">역할</span> 매칭 임계값(5px, 8mm)의 데이터 기반 근거 확보 + sanity check</div>
+      <div class="prose">
+        • 판독자 간 centroid 거리 분포 히스토그램 → 95th percentile 기반 임계값 정당화 (centroid_distribution.png)<br>
+        • group_size > 4 케이스 탐지 (4명 초과 시 오매칭 의심)<br>
+        • 결절 없는 series 원인 분석, DICOM spacing 분포 확인<br>
+        • config.py의 NODULE_XY_THR / NODULE_Z_THR을 직접 import → 임계값 변경 시 자동 반영
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 체크리스트 -->
+<div id="tab-checklist" class="tab-content">
+  <div class="section">
+    <div class="section-title">완료 ✓</div>
+    <ul class="checklist">
+      <li><span class="ck-done">✓</span><div><strong>LIDC XML 파싱</strong> — 4판독자 malignancy + polygon ROI, deci-mm z 보정, z_suspicious 플래그</div></li>
+      <li><span class="ck-done">✓</span><div><strong>Inter-reader 매칭</strong> — XY≤5px, Z≤8mm greedy 그룹화, 동일 reader 중복 병합 방지</div></li>
+      <li><span class="ck-done">✓</span><div><strong>파생값 계산</strong> — center_z(판독자 합의), rep_polygon, center_x/y, 결절 직경 3D</div></li>
+      <li><span class="ck-done">✓</span><div><strong>DICOM 메타 추출</strong> — 883 시리즈, pixel_spacing, z_spacing, rescale slope/intercept</div></li>
+      <li><span class="ck-done">✓</span><div><strong>NIfTI 변환</strong> — 1mm 등방성 리샘플, 반전 DICOM actual_step 부호 보정</div></li>
+      <li><span class="ck-done">✓</span><div><strong>HU 윈도잉 + 정규화</strong> — [-1000, 400] 클리핑 → [0,1], ct_norm.nii.gz</div></li>
+      <li><span class="ck-done">✓</span><div><strong>Segmentation mask</strong> — polygon → 3D mask (seg.nii.gz), 값=nodule_idx+1</div></li>
+      <li><span class="ck-done">✓</span><div><strong>매칭 임계값 검증</strong> — centroid 거리 분포 히스토그램, 95th percentile 근거 확보</div></li>
+      <li><span class="ck-done">✓</span><div><strong>Dataset 클래스 + Train/Val/Test split</strong> — 2,696개 결절, 환자 단위 50:25:25</div></li>
+      <li><span class="ck-done">✓</span><div><strong>베이스라인 CNN</strong> — 3 conv block, 단일 슬라이스 2D 입력</div></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">확인 필요 !</div>
+    <ul class="checklist">
+      <li><span class="ck-warn">!</span><div><strong>seg.nii.gz nonzero 전수 검사 미실행</strong> — export_nifti.py 상단 주석 스크립트 실행 필수. 빈 mask 환자 수 파악 후 제외 여부 결정해야 실제 결절 수 확정 가능</div></li>
+      <li><span class="ck-warn">!</span><div><strong>bbox_2d / bbox_3d 미구현</strong> — parse_lidc_annotations.py에 주석 처리됨. ROI crop 구현 전 결정 필요</div></li>
+      <li><span class="ck-warn">!</span><div><strong>제조사/커널 정보 비활성화</strong> — match_dicom.py에서 manufacturer, convolution_kernel 주석 처리. 장비별 intensity drift 미분석</div></li>
+      <li><span class="ck-warn">!</span><div><strong>베이스라인 학습 결과 없음</strong> — AUC, F1, Confusion Matrix 미측정. 2.5D와 비교 기준선 필수</div></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">미구현 ○</div>
+    <ul class="checklist">
+      <li><span class="ck-todo">○</span><div><strong>결절 패치(ROI crop) 추출</strong> — center_x/y/z 기준 64×64 패치 추출 함수 미구현</div></li>
+      <li><span class="ck-todo">○</span><div><strong>2.5D 슬라이스 스택 구성</strong> — center_z ± N 슬라이스 채널 스택(N=1,2,3) 미구현</div></li>
+      <li><span class="ck-todo">○</span><div><strong>2.5D 모델 구조</strong> — 입력 채널 가변 CNN / ResNet18 전이학습 미설계</div></li>
+      <li><span class="ck-todo">○</span><div><strong>클래스 불균형 처리</strong> — 악성(15%) 과소표현 → weighted loss / oversampling 미설계</div></li>
+      <li><span class="ck-todo">○</span><div><strong>Data Augmentation</strong> — random rotation/flip/elastic 미구현</div></li>
+      <li><span class="ck-todo">○</span><div><strong>N값 Ablation Study</strong> — N=0(2D), 1, 2, 3 조건별 AUC 비교 실험 미수행</div></li>
+      <li><span class="ck-todo">○</span><div><strong>Grad-CAM 분석</strong> — 맥락 슬라이스 기여도 시각화 미구현</div></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ 다음 스텝 -->
+<div id="tab-next" class="tab-content">
+  <div class="section">
+    <div class="section-title">즉시 실행 — 오늘 / 이번 주</div>
+
+    <div class="next-card">
+      <div class="next-num">STEP A <span class="badge badge-hi">긴급</span></div>
+      <div class="next-title">seg nonzero 전수 검사</div>
+      <div class="next-desc">export_nifti.py 상단 주석의 검증 스크립트 실행 → 빈 mask 환자 목록 파악 → 실제 유효 결절 수 확정. 이 수치가 2.5D 실험의 기준 결절 수가 됨.</div>
+    </div>
+
+    <div class="next-card">
+      <div class="next-num">STEP B <span class="badge badge-hi">긴급</span></div>
+      <div class="next-title">결절 패치 추출 구현</div>
+      <div class="next-desc">nodule_info_clean.json의 center_x/y/z 좌표로 ct_norm.nii.gz에서 64×64 ROI crop 함수 구현. bbox_2d 주석 해제 여부 결정. 경계 처리(패딩) 로직 포함.</div>
+    </div>
+
+    <div class="next-card">
+      <div class="next-num">STEP C <span class="badge badge-hi">긴급</span></div>
+      <div class="next-title">2.5D Dataset 클래스 수정</div>
+      <div class="next-desc">현재 단일 슬라이스 Dataset을 center_z ± N 슬라이스 스택 방식으로 수정. config 파라미터로 N 전환 가능하게 설계. WeightedRandomSampler 추가(악성 클래스 불균형 보정).</div>
+    </div>
+
+    <div class="next-card">
+      <div class="next-num">STEP D</div>
+      <div class="next-title">베이스라인 2D 학습 → AUC 측정</div>
+      <div class="next-desc">베이스라인 3-conv CNN으로 학습 완료 후 Test set AUC 측정. 이 수치가 2.5D 비교 기준선. Weighted cross-entropy 또는 focal loss 적용. Random flip/rotation augmentation 추가.</div>
+    </div>
+
+    <div class="next-card">
+      <div class="next-num">STEP E</div>
+      <div class="next-title">2.5D CNN 구현 + 비교 실험</div>
+      <div class="next-desc">입력 채널 수를 config로 받는 2.5D 모델 구현. N=0(2D, 1ch), N=1(3ch), N=2(5ch), N=3(7ch) 동일 조건(split/seed/lr/epoch)으로 실험. 결과 표: AUC / macro-F1 / 악성 recall 비교.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">중기 (2-4주) 확장 계획</div>
+    <div class="card-row">
+      <div class="card-sm" style="min-width:190px">
+        <div class="lbl">모델 고도화</div>
+        <div style="font-size:13px;font-weight:600;margin:.25rem 0">ResNet18 전이학습</div>
+        <div class="sub">ImageNet 3ch 그대로 활용. conv1 가중치 mean으로 N채널 확장도 실험.</div>
+      </div>
+      <div class="card-sm" style="min-width:190px">
+        <div class="lbl">Augmentation</div>
+        <div style="font-size:13px;font-weight:600;margin:.25rem 0">CT 특화 aug</div>
+        <div class="sub">Elastic deformation, HU jitter, TTA(test-time aug) 적용.</div>
+      </div>
+      <div class="card-sm" style="min-width:190px">
+        <div class="lbl">해석가능성</div>
+        <div style="font-size:13px;font-weight:600;margin:.25rem 0">Grad-CAM</div>
+        <div class="sub">center vs ±N 슬라이스의 activation 기여도. 맥락 정보가 실제로 사용되는지 검증.</div>
+      </div>
+      <div class="card-sm" style="min-width:190px">
+        <div class="lbl">평가 체계</div>
+        <div style="font-size:13px;font-weight:600;margin:.25rem 0">macro-AUC</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+</script>
+</body>
+</html>

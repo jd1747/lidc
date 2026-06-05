@@ -1,0 +1,21 @@
+[project]
+name = "lidc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "albumentations<=2.0.8",
+    "matplotlib<=3.10.9",
+    "nibabel<=5.4.2",
+    "numpy<=2.4.6",
+    "optuna<=4.8.0",
+    "pandas<=3.0.3",
+    "pydicom>=3.0.2",
+    "pyqt5<=5.15.11",
+    "scikit-image>=0.25.2",
+    "scikit-learn<=1.8.0",
+    "simpleitk<=2.5.5",
+    "torch==2.10.0",
+    "torchvision>=0.25.0",
+]
